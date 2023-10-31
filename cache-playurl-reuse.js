@@ -26,28 +26,33 @@ recorderEvents = {
 		let playurl = UrlFromBody(playUrlRsp.body);
         if (!playurl) return null;
 
-        if (!(/_bluray/.test(playurl))) {
-			console.debug('saving playurl for room:' + roomid);
+        if (!(/_(1500|bluray)/.test(playurl))) {
+		console.debug('saving playurl for room:' + roomid);
             sharedStorage.setItem('playurl:room:' + roomid, playUrlRsp.body);
             sharedStorage.setItem('playurl:room:count:' + roomid, '0');
         } else {		
-			let oldUrlBody = sharedStorage.getItem('playurl:room:' + roomid);
-			if (oldUrlBody) {
-				let oldUrlCount = Number(sharedStorage.getItem('playurl:room:count:' + roomid))
-				console.debug('checking cached playurl for room:' + roomid + ', count:' + oldUrlCount);
-				const oldUrl = UrlFromBody(oldUrlBody);
-				const expires = new URL(oldUrl).searchParams.get('expires');
-				if ((Date.now() / 1000) + 1800 < Number(expires) && oldUrlCount < 5) {
-					sharedStorage.setItem('playurl:room:count:' + roomid, (oldUrlCount+1).toString());
-					console.debug('use cached playurl: ' + oldUrl);
-					return oldUrl;
-				} else {
-					console.debug('removing expired playurl for room:' + roomid);
-					sharedStorage.removeItem('playurl:room:' + roomid);
-				}
-			}
-		}
-		console.debug('use fetched playurl: ' + playurl);
-		return playurl;
+    		let oldUrlBody = sharedStorage.getItem('playurl:room:' + roomid);
+    		if (oldUrlBody) {
+    			let oldUrlCount = Number(sharedStorage.getItem('playurl:room:count:' + roomid))
+    			console.debug('checking cached playurl for room:' + roomid + ', count:' + oldUrlCount);
+    			const oldUrl = UrlFromBody(oldUrlBody);
+    			const expires = new URL(oldUrl).searchParams.get('expires');
+    			if ((Date.now() / 1000) + 1800 < Number(expires) && oldUrlCount < 5) {
+    				sharedStorage.setItem('playurl:room:count:' + roomid, (oldUrlCount+1).toString());
+    				console.debug('use cached playurl: ' + oldUrl);
+    				return oldUrl;
+    			} else {
+    				console.debug('removing expired playurl for room:' + roomid);
+    				sharedStorage.removeItem('playurl:room:' + roomid);
+    			}
+    		}
+    	}
+    	if (/_1500/.test(playurl)) {
+    		console.debug('use original method to get playurl');
+            return null;
+    	} else {
+    		console.debug('use fetched playurl: ' + playurl);
+    		return playurl;
+    	}
     }
 }
